@@ -1,0 +1,12 @@
+{
+  "source": "Local utilities fixture",
+  "updatedAt": "2026-09-08T06:00:00Z",
+  "energy": { "usedKwh": 1840, "budgetKwh": 2400, "trend": "6% below daily baseline" },
+  "shipment": { "name": "Aurora resupply flight", "mode": "AIRLIFT", "eta": "2026-09-14 11:30 UTC", "status": "SCHEDULED", "cargo": "Fresh stores, medical supplies, fuel-system parts" },
+  "biosecurity": [
+    { "label": "Cargo inspected and sealed", "complete": true },
+    { "label": "Footwear and equipment cleaned", "complete": true },
+    { "label": "Soil and seed declaration signed", "complete": false },
+    { "label": "Waste return manifest prepared", "complete": false }
+  ]
+}

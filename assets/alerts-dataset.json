@@ -1,0 +1,14 @@
+{
+  "source": "Local alerts fixture",
+  "updatedAt": "2026-09-08T06:00:00Z",
+  "sites": [
+    { "name": "Lake Bonney Traverse", "access": "RESTRICTED", "meltwater": "HIGH", "delay": "+6 h", "route": "Escort required" },
+    { "name": "North Ridge Camp", "access": "OPEN", "meltwater": "LOW", "delay": "-", "route": "Route clear" },
+    { "name": "Beacon Valley", "access": "CAUTION", "meltwater": "MED", "delay": "+2 h", "route": "Check-in required" }
+  ],
+  "heritage": [
+    { "name": "East field hut", "status": "STRUCTURAL ALERT", "detail": "Wind scour exposed the west foundation edge.", "kind": "bad" },
+    { "name": "Old instrument shelter", "status": "MONITOR", "detail": "Moisture reading remains within the seasonal watch band.", "kind": "warn" },
+    { "name": "South cache store", "status": "STABLE", "detail": "No new integrity observations in the latest inspection.", "kind": "ok" }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "source": "Local data transfer fixture",
+  "updatedAt": "2026-09-08T06:00:00Z",
+  "queue": { "queuedFiles": 3, "queuedGb": 184, "nextWindow": "13:28 UTC", "protocol": "X-band / 320 Mbps" },
+  "phases": [
+    { "month": "March", "label": "Beginning of isolation", "phase": "Onset phase", "status": "ELEVATED", "description": "Reduced daylight and shrinking logistics windows increase the need for deliberate routines.", "gauges": [{ "label": "Routine stability", "value": 68 }, { "label": "Social connection", "value": 74 }, { "label": "Sleep regularity", "value": 56 }], "actions": ["Confirm weekly peer check-in", "Review polar-night lighting plan"] },
+    { "month": "June", "label": "Midwinter", "phase": "Sustained isolation", "status": "WATCH", "description": "Keep support pathways visible and maintain predictable handover rhythms through the darkest period.", "gauges": [{ "label": "Routine stability", "value": 61 }, { "label": "Social connection", "value": 63 }, { "label": "Sleep regularity", "value": 59 }], "actions": ["Schedule a team activity", "Check cabin light timers"] },
+    { "month": "September", "label": "Return preparation", "phase": "Transition phase", "status": "STEADY", "description": "Prepare for increased movement, visitors, and changing responsibilities as the season turns.", "gauges": [{ "label": "Routine stability", "value": 79 }, { "label": "Social connection", "value": 82 }, { "label": "Sleep regularity", "value": 72 }], "actions": ["Review turnover notes", "Confirm arrival briefing"] }
+  ]
+}

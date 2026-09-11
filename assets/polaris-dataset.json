@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "name": "Polaris Ops demonstration dataset",
+    "version": "1.0.0",
+    "source": "Local fixture for interface integration",
+    "authoritative": false,
+    "lastUpdated": "2026-09-08T06:00:00Z",
+    "_comments": {
+      "authoritative": "False means these values are demonstration fixtures, not live station telemetry.",
+      "lastUpdated": "UTC timestamp for the fixture snapshot."
+    }
+  },
+  "station": {
+    "_comments": {
+      "drs": "Data Relay System health state.",
+      "hf": "High-frequency communications and telemetry state.",
+      "kp": "Planetary K-index from 0 to 9; higher values indicate stronger geomagnetic activity.",
+      "temperature": "Station air temperature in degrees Celsius.",
+      "wind": "Station wind speed in knots.",
+      "visibility": "Horizontal visibility in kilometres.",
+      "pbl": "Planetary boundary-layer height in metres; useful for atmospheric propagation context.",
+      "winterOverDay": "Current day number in the winter-over deployment.",
+      "orbits": "Satellite passes considered visible and usable during the current day.",
+      "dataCapturedTb": "Payload data captured in the previous 24 hours, measured in terabytes.",
+      "linkAvailability": "Percentage of the communications link available during the reporting period."
+    },
+    "drs": "NOMINAL",
+    "hf": "IMPAIRED",
+    "kp": 5,
+    "temperature": -31,
+    "wind": 28,
+    "visibility": 18,
+    "pbl": 420,
+    "winterOverDay": 187,
+    "orbits": 11,
+    "dataCapturedTb": 4.8,
+    "linkAvailability": 82
+  },
+  "passes": [
+    { "_comments": "Satellite capture opportunity. Elevation is peak degrees above the horizon; azimuth is degrees clockwise from north; duration is minutes.", "id": "aqua-0914", "satellite": "AQUA", "window": "09:14–09:23 UTC", "elevation": 64, "azimuth": 42, "duration": 9, "status": "AVAILABLE", "color": "#168a9b" },
+    { "id": "landsat-1041", "satellite": "LANDSAT 9", "window": "10:41–10:52 UTC", "elevation": 48, "azimuth": 118, "duration": 11, "status": "AVAILABLE", "color": "#247cc0" },
+    { "id": "sentinel-1328", "satellite": "SENTINEL-2A", "window": "13:28–13:36 UTC", "elevation": 72, "azimuth": 226, "duration": 8, "status": "SCHEDULED", "color": "#bd7312" },
+    { "id": "icesat-1755", "satellite": "ICESAT-2", "window": "17:55–18:04 UTC", "elevation": 36, "azimuth": 304, "duration": 9, "status": "AVAILABLE", "color": "#7560bd" }
+  ],
+  "storm": {
+    "_comments": {
+      "level": "Human-readable geomagnetic storm classification.",
+      "forecast": "Kp values at successive three-hour forecast points, ordered from oldest to newest.",
+      "alerts": "Operator-facing communication guidance generated from the storm forecast."
+    },
+    "level": "G1 MINOR",
+    "forecast": [2, 3, 4, 5, 6, 5, 4, 3, 3, 2, 2, 1],
+    "alerts": [
+      { "severity": "WARN", "title": "HF absorption elevated", "detail": "Prefer scheduled X-band windows for priority payloads." },
+      { "severity": "INFO", "title": "Link recovery expected", "detail": "Forecast conditions ease after 18:00 UTC." }
+    ]
+  },
+  "supportTimeline": [
+    { "_comments": "Monthly support snapshot. Gauge values are local planning indicators from 0 to 100, not clinical scores.", "month": "March", "label": "Beginning of isolation", "phase": "Onset phase", "status": "ELEVATED", "description": "Reduced daylight and shrinking logistics windows increase the need for deliberate routines.", "gauges": [{ "label": "Routine stability", "value": 68 }, { "label": "Social connection", "value": 74 }, { "label": "Sleep regularity", "value": 56 }], "actions": ["Confirm weekly peer check-in", "Review polar-night lighting plan"] },
+    { "month": "June", "label": "Midwinter", "phase": "Sustained isolation", "status": "WATCH", "description": "Keep support pathways visible and maintain predictable handover rhythms through the darkest period.", "gauges": [{ "label": "Routine stability", "value": 61 }, { "label": "Social connection", "value": 63 }, { "label": "Sleep regularity", "value": 59 }], "actions": ["Schedule a team activity", "Check cabin light timers"] },
+    { "month": "September", "label": "Return preparation", "phase": "Transition phase", "status": "STEADY", "description": "Prepare for increased movement, visitors, and changing responsibilities as the season turns.", "gauges": [{ "label": "Routine stability", "value": 79 }, { "label": "Social connection", "value": 82 }, { "label": "Sleep regularity", "value": 72 }], "actions": ["Review turnover notes", "Confirm arrival briefing"] }
+  ],
+  "sites": [
+    { "_comments": "Access is the current route permission; meltwater is a qualitative field condition; delay is the estimated route impact.", "name": "Lake Bonney Traverse", "access": "RESTRICTED", "meltwater": "HIGH", "delay": "+6 h", "route": "Escort required" },
+    { "name": "North Ridge Camp", "access": "OPEN", "meltwater": "LOW", "delay": "—", "route": "Route clear" },
+    { "name": "Beacon Valley", "access": "CAUTION", "meltwater": "MED", "delay": "+2 h", "route": "Check-in required" }
+  ],
+  "heritage": [
+    { "name": "East field hut", "status": "STRUCTURAL ALERT", "detail": "Wind scour exposed the west foundation edge.", "kind": "bad" },
+    { "name": "Old instrument shelter", "status": "MONITOR", "detail": "Moisture reading remains within the seasonal watch band.", "kind": "warn" },
+    { "name": "South cache store", "status": "STABLE", "detail": "No new integrity observations in the latest inspection.", "kind": "ok" }
+  ]
+}

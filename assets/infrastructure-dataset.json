@@ -1,0 +1,9 @@
+{
+  "source": "Local infrastructure fixture",
+  "updatedAt": "2026-09-08T06:00:00Z",
+  "devices": [
+    { "name": "DRS antenna PA-1", "type": "Telemetry and downlink", "status": "TRUSTED", "lastSeen": "06:02 UTC" },
+    { "name": "AWS weather mast", "type": "Environmental station", "status": "TRUSTED", "lastSeen": "05:58 UTC" },
+    { "name": "Traverse tablet T-04", "type": "Field equipment", "status": "PENDING", "lastSeen": "Yesterday" }
+  ]
+}

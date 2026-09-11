@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Polaris Ops Antarctic station logo</title>
+  <desc id="desc">A blue Antarctic research station beneath a satellite and mountain peaks.</desc>
+  <circle cx="128" cy="128" r="112" fill="#f8fcfe" stroke="#0d4678" stroke-width="12"/>
+  <path d="M28 137c10-38 28-59 53-71v31c-20 12-33 28-41 48" fill="none" stroke="#0d4678" stroke-width="10"/>
+  <path d="M228 137c-10-38-28-59-53-71v31c20 12 33 28 41 48" fill="none" stroke="#0d4678" stroke-width="10"/>
+  <path d="m43 135 42-43 22 19 27-40 26 38 29-22 46 48v42H43z" fill="#d9f1fb"/>
+  <path d="m45 136 40-35 20 17 29-37 24 35 28-21 44 41" fill="none" stroke="#0d4678" stroke-width="10"/>
+  <path d="m73 126 37-11 20 10 18-13 35 13 29-5 22 20H50z" fill="#fff"/>
+  <path d="M67 173h122v25H67z" fill="#0d4678"/>
+  <path d="M78 169h100l-12-19H92z" fill="#0d4678"/>
+  <path d="M88 171v27m27-27v27m28-27v27m27-27v27" stroke="#f8fcfe" stroke-width="5"/>
+  <path d="M128 150v-26" stroke="#0d4678" stroke-width="5"/>
+  <path d="M128 124c-16-3-25-10-31-19m31 19c16-3 25-10 31-19" fill="none" stroke="#38a8d8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M128 112c-9-2-15-6-19-12m19 12c9-2 15-6 19-12" fill="none" stroke="#38a8d8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M96 48 111 39 128 44 145 39 160 48 145 57 128 52 111 57z" fill="#0d4678"/>
+  <path d="M128 44v21" stroke="#0d4678" stroke-width="5"/>
+</svg>
