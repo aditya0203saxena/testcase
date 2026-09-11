@@ -722,6 +722,11 @@ $("#dataUpload")?.addEventListener("change", (event) => {
   toast("Data queued", `${file.name} is ready for an authenticated transfer service.`);
 });
 
+$$(".focus-link").forEach(link => link.addEventListener("click", () => {
+  const target = $(`#modnav .tab[data-mod="${link.dataset.mod}"]`);
+  target?.click();
+}));
+
 /* Restore the last validated browser session, or show the login page. */
 restoreSession();
 markUnavailable(); renderMaint(); renderObsSelect(); renderObsLog(); renderAlertLog(); renderThreads(); renderDocs();
