@@ -542,3 +542,7 @@ button,input,select,textarea{font-family:"Archivo",Arial,Helvetica,sans-serif}
 body::after{content:"";position:fixed;z-index:-1;inset:-20%;pointer-events:none;opacity:.16;filter:blur(42px);background:radial-gradient(ellipse 34% 20% at 18% 8%,rgba(22,138,155,.55),transparent 72%),radial-gradient(ellipse 28% 18% at 78% 17%,rgba(40,106,166,.42),transparent 70%),radial-gradient(ellipse 22% 15% at 52% 0%,rgba(114,96,189,.25),transparent 72%);animation:aurora-drift 22s ease-in-out infinite alternate}
 @keyframes aurora-drift{0%{transform:translate3d(-3%,1%,0) scale(1);opacity:.12}50%{transform:translate3d(2%,4%,0) scale(1.08);opacity:.2}100%{transform:translate3d(5%,-2%,0) scale(1.02);opacity:.14}}
 @media(prefers-reduced-motion:reduce){body::after{animation:none}}
+
+/* Keep the aurora above the page paint layer while leaving every control clickable. */
+body::after{z-index:0}
+#app-shell,#login-screen{position:relative;z-index:1}
