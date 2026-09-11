@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  POLARIS OPS — Antarctic Station Operations Console
+  Single-file frontend: HTML + CSS + JavaScript (no build step, no dependencies)
+  ----------------------------------------------------------------------------
+  MODULES
+    1. View Twin Model
+    2. Access Infrastructure
+    3. Utilities
+    4. Data Transfer Protocol
+    5. Alerts
+  ----------------------------------------------------------------------------
+  No operational telemetry or fabricated observations are embedded. Connect the
+  data adapters below to authoritative station feeds before displaying live values.
+  ============================================================================
+-->
+<html lang="en">
+<head>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050b14'/%3E%3Cpath d='M32 8L39 27L56 32L39 37L32 56L25 37L8 32L25 27Z' fill='%234fe0c0'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%23050b14'/%3E%3C/svg%3E">
+  
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Polaris Ops | Station Operations Console</title>
+<meta name="description" content="Institutional operations console for Antarctic research teams: station monitoring, infrastructure, utilities, permits, data transfer, and alerts." />
+<meta property="og:title" content="Polaris Ops — Antarctic Station Operations Console" />
+<meta property="og:description" content="Five-module console for Antarctic stations: twin model monitoring, infrastructure access, utilities, data transfer, and alerts." />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/"
+  }
+}
+</script>
+
+<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-top">
+      <div class="login-brand">
+        <img class="login-logo" src="assets/polaris-logo.svg" alt="Polaris Ops Antarctic station logo" />
+        <div>Polaris Ops</div>
+      </div>
+      <div class="login-badge">Secure</div>
+    </div>
+    <h1>Sign in</h1>
+    <p>Access the Antarctic operations console with your authorized Supabase account.</p>
+
+    <form id="loginForm" class="login-form">
+      <div class="field">
+        <label for="loginRole">Access type</label>
+        <select id="loginRole" name="role">
+          <option value="visitor">Visitor</option>
+          <option value="researcher">Researcher</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="loginEmail">Email or username</label>
+        <input id="loginEmail" name="email" type="text" placeholder="Enter email or username" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" name="password" type="password" placeholder="Enter password" autocomplete="current-password" required />
+      </div>
+      <button class="btn primary" type="submit">Log in</button>
+    </form>
+
+    <div class="login-divider"><span>or</span></div>
+    <button class="btn ghost google-login" id="googleLoginButton" type="button">
+      <img class="google-mark" src="assets/google-logo.svg" alt="" aria-hidden="true" />
+      <span class="google-label">Continue with Google</span>
+      <span class="google-arrow" aria-hidden="true">↗</span>
+    </button>
+
+    <div id="loginStatus" class="login-status" aria-live="polite"></div>
+  </div>
+</div>
+
+<div id="app-shell">
+<!-- ==========================================================================
+     TOP BAR
+     ========================================================================== -->
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <img class="brand-logo" src="assets/polaris-logo.svg" alt="Polaris Ops Antarctic station logo" />
+      <div>Polaris Ops</div>
+    </div>
+
+    <nav class="modnav" id="modnav" role="tablist" aria-label="Operational modules">
+      <button class="tab" role="tab" data-mod="m1" aria-selected="true">Twin Model</button>
+      <button class="tab" role="tab" data-mod="m2" aria-selected="false">Infrastructure</button>
+      <button class="tab" role="tab" data-mod="m3" aria-selected="false">Utilities</button>
+      <button class="tab" role="tab" data-mod="m4" aria-selected="false">Data Transfer</button>
+      <button class="tab" role="tab" data-mod="m5" aria-selected="false">Alerts</button>
+      <button class="tab admin-tab" role="tab" data-mod="admin" aria-selected="false" hidden>Admin</button>
+    </nav>
+
+    <button class="btn ghost sm" id="logoutButton" type="button">Log out</button>
+  </div>
+</header>
+
+<!-- Station-wide status strip — values remain blank until a live feed is connected -->
+<main class="wrap">
+
+<section class="module admin-tools panel" id="admin" role="tabpanel" hidden data-admin-only>
+  <div class="phead"><div><h2>Administrator controls</h2><div class="sub">Changes are written to the connected dataset store.</div></div><span class="pill warn">ADMIN</span></div>
+  <div class="grid g3">
+    <form id="accountRoleForm" class="field">
+      <label for="accountIdentifier">Set account access</label>
+      <input id="accountIdentifier" name="identifier" placeholder="Email or username" required />
+      <select id="accountRole" name="role">
+        <option value="visitor">Visitor</option>
+        <option value="researcher">Researcher</option>
+        <option value="admin">Administrator</option>
+      </select>
+      <button class="btn primary sm" type="submit">Save access</button>
+    </form>
+    <form id="deviceForm" class="field">
+      <label for="adminDeviceName">Add IoT device</label>
+      <input id="adminDeviceName" name="name" placeholder="Device name" required />
+      <input id="adminDeviceType" name="type" placeholder="Device type" required />
+      <button class="btn primary sm" type="submit">Add device</button>
+    </form>
+    <form id="policyForm" class="field">
+      <label for="adminPolicyProtocol">Edit transfer policy</label>
+      <input id="adminPolicyProtocol" name="protocol" placeholder="Protocol" required />
+      <input id="adminPolicyWindow" name="nextWindow" placeholder="Next window" required />
+      <button class="btn primary sm" type="submit">Save policy</button>
+    </form>
+    <form id="datasetEditForm" class="field">
+      <label for="adminDatasetPath">Alter dataset field</label>
+      <input id="adminDatasetPath" name="path" placeholder="alerts.sites.0.access" required />
+      <input id="adminDatasetValue" name="value" placeholder="New value" required />
+      <button class="btn primary sm" type="submit">Update dataset</button>
+    </form>
+  </div>
+  <div id="adminStatus" class="login-status" aria-live="polite"></div>
+  <div class="admin-user-log">
+    <div class="phead"><div><h3>User access log</h3><div class="sub">Assigned authorities and last changes</div></div><button class="btn ghost sm" id="refreshAccounts" type="button">Refresh log</button></div>
+    <div class="list" id="accountLog"><div class="row"><span class="pill">EMPTY</span><div class="txt"><b>No account assignments</b><span>Assign access to an email or username above.</span></div></div></div>
+  </div>
+</section>
+
+<!-- ==========================================================================
+    MODULE 1 — VIEW TWIN MODEL
+     ========================================================================== -->
+<section class="module active" id="m1" role="tabpanel" data-dataset="polaris">
+  <div class="statusstrip">
+    <div class="wrap">
+      <div class="sitem"><i class="dot" id="stDrs"></i>DRS <b id="vDrs" data-dataset-path="polaris.station.drs">NO DATA</b></div>
+      <div class="sitem"><i class="dot warn" id="stHf"></i>HF/TTC <b id="vHf" data-dataset-path="polaris.station.hf">NO DATA</b></div>
+      <div class="sitem">Kp <b id="vKp" data-dataset-path="polaris.station.kp">—</b></div>
+      <div class="sitem">Temp <b id="vTemp" data-dataset-path="polaris.station.temperature">—</b></div>
+      <div class="sitem">Wind <b id="vWind" data-dataset-path="polaris.station.wind">—</b></div>
+      <div class="sitem">Vis <b id="vVis" data-dataset-path="polaris.station.visibility">—</b></div>
+      <div class="sitem">PBL <b id="vPbl" data-dataset-path="polaris.station.pbl">—</b></div>
+      <div class="sitem">Winter-over day <b id="vDay" data-dataset-path="polaris.station.winterOverDay">—</b></div>
+    </div>
+  </div>
+  <div class="modhead">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>Station operations / 11 September 2026</div>
+    <h1>Good morning, station team.</h1>
+    <p class="lead">A clear view of what needs attention before the next capture window.</p>
+  </div>
+
+  <section class="command-summary" aria-label="Station summary">
+    <div class="summary-main"><span class="summary-kicker">TODAY AT A GLANCE</span><strong>Station systems are ready</strong><span>Three routine checks and one communications watch item are on the board.</span></div>
+    <div class="summary-item"><b>07:40</b><span>Next satellite pass</span></div>
+    <div class="summary-item"><b>−18°C</b><span>Outside temperature</span></div>
+    <div class="summary-item"><b>04</b><span>Open work orders</span></div>
+  </section>
+
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="panel">
+      <div class="label">Visible orbits today</div>
+      <div class="metric" id="kOrbits">—<small>/ 14 possible</small></div>
+      <div class="bar" style="margin-top:10px"><i style="width:79%"></i></div>
+      <div class="sub">Equatorial baseline: 4 / 14</div>
+    </div>
+    <div class="panel">
+      <div class="label">Data captured (24 h)</div>
+      <div class="metric" id="kData">—<small>TB</small></div>
+      <div class="bar" style="margin-top:10px"><i style="width:64%"></i></div>
+      <div class="sub">Target 6.0 TB · downlink X-band 320 Mbps</div>
+    </div>
+    <div class="panel">
+      <div class="label">Link availability</div>
+      <div class="metric" id="kLink">—<small>%</small></div>
+      <div class="bar warn" style="margin-top:10px"><i id="kLinkBar" style="width:82%"></i></div>
+      <div class="sub">HF/DCS impaired by ongoing storm</div>
+    </div>
+  </div>
+
+  <div class="panel model-viewer">
+    <div class="phead">
+      <div><h2>Station Landscape Model</h2></div>
+      <span class="pill info" id="modelPill">PREVIEW</span>
+    </div>
+    <div class="model-preview" id="modelPreview" aria-label="Station landscape preview">
+      <svg viewBox="0 0 620 300" role="img" aria-label="Illustrated station landscape">
+        <path d="M0 235 150 145l155 35 145-73 170 60v133H0Z" fill="#c5e8f0"/>
+        <path d="m100 215 215-95 205 55-209 91Z" fill="#f8fdff"/>
+        <path d="m200 188 112-57 135 37-114 60Z" fill="#29495a"/>
+        <path d="m200 188 0 62 133 35v-57Z" fill="#d9eef2"/>
+        <path d="m333 228 114-60v58l-114 59Z" fill="#a9d2dd"/>
+        <path d="m236 177 75-38 83 24-76 39Z" fill="#3c6070"/>
+        <path d="m259 189 18 5v20l-18-5Zm34 9 18 5v20l-18-5Zm34 9 18 5v20l-18-5Z" fill="#54d8ce"/>
+        <path d="m165 232 18-8 17 6-18 9Zm43 18 18-8 17 6-18 9Zm43 18 18-8 17 6-18 9Z" fill="#f5af45"/>
+        <circle cx="487" cy="143" r="20" fill="#8edbd1"/><path d="M487 163v55" stroke="#457984" stroke-width="5"/>
+      </svg>
+    </div>
+    <div class="model-stage" id="modelStage" hidden>
+      <div class="model-status loading" id="modelStatus" role="status" aria-live="polite">Loading landscape model…</div>
+    </div>
+    <div class="model-controls">
+      <button class="btn sm primary" type="button" id="modelOpen">Open 3D model</button>
+      <button class="btn sm ghost" type="button" id="modelReset" disabled>Reset view</button>
+      <button class="btn sm ghost" type="button" id="modelClose" hidden>Close 3D model</button>
+    </div>
+  </div>
+
+  <div class="grid g-1-2" style="margin-bottom:16px">
+    <!-- Polar sky plot -->
+    <div class="panel">
+      <div class="phead">
+        <div><h2>Orbit Acquisition Scheduler</h2><div class="sub">Az/El sky view · antenna PA-1 (7.2 m)</div></div>
+        <span class="pill ok" id="trackPill">NO DATA</span>
+      </div>
+
+      <div class="skyplot">
+        <svg viewBox="0 0 200 200" aria-label="Polar sky plot of visible satellite passes">
+          <defs>
+            <radialGradient id="skyg" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="rgba(79,224,192,.10)" />
+              <stop offset="100%" stop-color="rgba(4,16,26,0)" />
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="100" r="90" fill="url(#skyg)" />
+          <circle class="ring outer" cx="100" cy="100" r="90" />
+          <circle class="ring" cx="100" cy="100" r="60" />
+          <circle class="ring" cx="100" cy="100" r="30" />
+          <line class="crosshair" x1="10" y1="100" x2="190" y2="100" />
+          <line class="crosshair" x1="100" y1="10" x2="100" y2="190" />
+          <text class="cardinal" x="97" y="6">N</text>
+          <text class="cardinal" x="97" y="199">S</text>
+          <text class="cardinal" x="192" y="103">E</text>
+          <text class="cardinal" x="2" y="103">W</text>
+          <g class="sweep">
+            <line x1="100" y1="100" x2="100" y2="10" stroke="rgba(79,224,192,.45)" stroke-width="1.5" />
+          </g>
+          <g id="traces"></g>
+        </svg>
+      </div>
+      <div class="axis"><span>EL 0°</span><span>EL 30°</span><span>EL 60°</span><span>ZENITH</span></div>
+    </div>
+
+    <!-- Pass table -->
+    <div class="panel">
+      <div class="phead">
+        <div><h2>Capture window queue</h2><div class="sub">Click a pass to schedule / release the DRS chain</div></div>
+        <button class="btn sm primary" id="autoSched">Auto-schedule best 6</button>
+      </div>
+      <div class="list" id="passList" data-dataset="polaris" data-dataset-collection="passes"></div>
+    </div>
+  </div>
+
+  <div class="grid g-2-1">
+    <!-- Magnetic storm -->
+    <div class="panel">
+      <div class="phead">
+        <div><h2>Magnetic Storm Communication Alerts</h2><div class="sub">Planetary K-index, 3-hourly · HF absorption forecast</div></div>
+        <span class="pill bad" id="stormPill">NO DATA</span>
+      </div>
+      <div class="kindex" id="kpBars" data-dataset="polaris" data-dataset-collection="storm.forecast"></div>
+      <div class="axis"><span>-24 h</span><span>-12 h</span><span>now</span><span>+12 h</span><span>+24 h</span></div>
+      <div class="list" style="margin-top:14px" id="stormAlerts" data-dataset="polaris" data-dataset-collection="storm.alerts"></div>
+    </div>
+
+    <!-- Maintenance -->
+    <div class="panel">
+      <div class="phead">
+        <div><h2>Overwintering Maintenance Logs</h2><div class="sub">24/7 preventive cadence · sub-zero procedures</div></div>
+        <span class="pill" id="maintPill">0 / 0</span>
+      </div>
+      <div class="list" id="maintList"></div>
+      <button class="btn ghost sm" style="margin-top:12px" id="signShift">Sign off current shift</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================================================
+    MODULE 2 — ACCESS INFRASTRUCTURE
+     ========================================================================== -->
+<section class="module" id="m2" role="tabpanel">
+  <div class="modhead">
+    <h1>Access Infrastructure</h1>
+  </div>
+
+  <div class="panel simple-state">
+    <div class="phead"><div><h2>Device access</h2><div class="sub">Manage trusted station equipment</div></div><span class="pill info">LOCAL</span></div>
+    <div class="action-row">
+      <button class="btn primary sm" id="authenticateDevice" type="button">Authenticate new device</button>
+      <button class="btn ghost sm" id="accessDevice" type="button">Access device</button>
+    </div>
+    <div class="row" id="deviceStatus"><span class="pill">READY</span><div class="txt"><b>No device action pending</b><span>Authenticate a new device or access an existing trusted device.</span></div></div>
+    <div class="list" id="deviceList" data-dataset="infrastructure" data-dataset-collection="devices" style="margin-top:14px"></div>
+  </div>
+
+</section>
+
+<!-- ==========================================================================
+    MODULE 3 — UTILITIES
+     ========================================================================== -->
+<section class="module" id="m3" role="tabpanel">
+  <div class="modhead">
+    <h1>Utilities</h1>
+  </div>
+
+  <div class="grid g-2-1" style="margin-bottom:16px">
+    <div class="panel">
+      <div class="phead">
+        <div><h2>Expedition Permit Portal</h2><div class="sub">No application loaded · Draft</div></div>
+        <span class="pill warn" id="permitPill">2 prerequisites missing</span>
+      </div>
+
+      <div class="stepper" id="stepper">
+        <div class="step done"><b>STEP 1</b>Applicant &amp; expedition</div>
+        <div class="step active"><b>STEP 2</b>Activity &amp; permit class</div>
+        <div class="step"><b>STEP 3</b>EIA &amp; waste plan</div>
+        <div class="step"><b>STEP 4</b>Biosecurity declaration</div>
+        <div class="step"><b>STEP 5</b>Submit to competent authority</div>
+      </div>
+
+      <form id="permitForm" novalidate>
+        <div class="grid g2">
+          <div class="field"><label>Lead investigator</label><input required placeholder="Enter investigator name" /></div>
+          <div class="field"><label>Institution</label><input required placeholder="Enter institution" /></div>
+        </div>
+        <div class="grid g2">
+          <div class="field">
+            <label>Permit class</label>
+            <select id="permitClass">
+              <option>Entry to Antarctica (Sec. 7)</option>
+              <option>Stay at a research base</option>
+              <option>Aircraft entry / overflight of protected area</option>
+              <option>Vessel entry to Antarctic waters</option>
+              <option>Sampling of native flora / fauna</option>
+              <option>Drilling &amp; ice-core recovery</option>
+            </select>
+          </div>
+          <div class="field"><label>Field window</label><input type="text" placeholder="Enter field window" /></div>
+        </div>
+        <div class="field"><label>Activity description</label><textarea placeholder="Describe the proposed activity"></textarea></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" type="submit">Validate &amp; advance</button>
+          <button class="btn ghost" type="button" id="saveDraft">Save draft</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><div><h2>EIA &amp; Waste Management</h2><div class="sub">Legal prerequisites for approval</div></div></div>
+      <div class="drop" id="dropEia"><b>Upload Environmental Impact Assessment</b><br /><span class="sub">Preliminary / IEE / CEE · PDF</span></div>
+      <div style="height:10px"></div>
+      <div class="drop" id="dropWaste"><b>Upload Waste Management Plan</b><br /><span class="sub">Segregation, retrograde, and fuel-spill annexes</span></div>
+      <div class="list" style="margin-top:14px" id="docList"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="phead">
+      <div><h2>Biosecurity &amp; Prohibited Activity Guidelines</h2><div class="sub">Penalties apply under national implementing legislation</div></div>
+      <span class="pill bad">STRICT LIABILITY</span>
+    </div>
+    <div class="prohibited">
+      <div class="pcard"><b>Unauthorised drilling</b><span>Mineral resource activity and any unpermitted subsurface drilling.</span><div class="pen">Imprisonment + fine · permit revocation</div></div>
+      <div class="pcard"><b>Nuclear activity</b><span>Nuclear explosions or disposal of radioactive waste.</span><div class="pen">Highest-tier criminal penalty</div></div>
+      <div class="pcard"><b>Ocean garbage dumping</b><span>Discharge of waste, plastics, or untreated effluent to sea.</span><div class="pen">Fine + retrograde cost recovery</div></div>
+      <div class="pcard"><b>Non-sterile soil</b><span>Introduction of soil, gravel, or unsterilised substrate.</span><div class="pen">Fine · mandatory remediation</div></div>
+      <div class="pcard"><b>Non-native species</b><span>Import of plants, animals, seeds, or microbial cultures.</span><div class="pen">Fine + eradication liability</div></div>
+      <div class="pcard"><b>Protected-area intrusion</b><span>ASPA entry or aircraft landing without a specific permit.</span><div class="pen">Fine · expedition suspension</div></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:16px">
+      <div>
+        <h3 style="margin-bottom:8px">Pre-departure biosecurity checklist</h3>
+        <div class="list" id="bioList" data-dataset="utilities" data-dataset-collection="biosecurity"></div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:8px">Compliance score</h3>
+        <div class="metric" id="bioScore">0<small>%</small></div>
+        <div class="bar bad" style="margin-top:10px"><i id="bioBar" style="width:0%"></i></div>
+        <p class="sub" style="margin-top:10px">A permit cannot be forwarded to the competent authority until every biosecurity item is cleared and both statutory documents are attached.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel simple-state">
+    <div class="phead"><div><h2>Energy usage tracker</h2><div class="sub">Station demand against the daily operating budget</div></div><span class="pill info">NO DATA</span></div>
+    <div class="metric" id="energyUsed" data-dataset="utilities" data-dataset-path="utilities.energy.usedKwh">—<small> kWh today</small></div>
+    <div class="bar" style="margin:10px 0"><i id="energyBar" style="width:0%" data-dataset-path="utilities.energy.usedKwh"></i></div>
+    <div class="sub" id="energyTrend" data-dataset-path="utilities.energy.trend">Awaiting utilities source.</div>
+  </div>
+
+  <div class="panel simple-state">
+    <div class="phead"><div><h2>Next shipment</h2><div class="sub">Upcoming station logistics movement</div></div><span class="pill info">NO DATA</span></div>
+    <div class="row" id="shipmentStatus" data-dataset="utilities" data-dataset-item="shipment"><span class="pill">SCHEDULED</span><div class="txt"><b>Shipment details unavailable</b><span>Connect the logistics feed to show the next vessel or airlift arrival.</span></div></div>
+  </div>
+
+  <div class="panel simple-state">
+    <div class="phead"><div><h2>Power optimisation mode</h2><div class="sub">Reduce non-essential load during constrained generation</div></div><span class="pill info" id="powerModePill">STANDBY</span></div>
+    <div class="row"><span class="pill">CONTROL</span><div class="txt"><b>Adaptive station power profile</b><span id="powerModeText">Essential systems remain prioritised; optimisation is ready to activate.</span></div></div>
+    <button class="btn primary sm" id="powerModeButton" type="button">Enable optimisation mode</button>
+  </div>
+
+</section>
+
+<!-- ==========================================================================
+    MODULE 4 — DATA TRANSFER PROTOCOL
+     ========================================================================== -->
+<section class="module" id="m4" role="tabpanel">
+  <div class="modhead">
+    <h1>Data Transfer Protocol</h1>
+  </div>
+
+  <div class="grid g-1-2" style="margin-bottom:16px">
+    <div class="panel">
+      <div class="phead"><div><h2>Timeline-Based Support Tracker</h2><div class="sub">Select a phase to view indicators</div></div></div>
+      <div class="timeline" id="timeline" data-dataset="data-transfer" data-dataset-collection="phases"></div>
+    </div>
+
+    <div class="panel">
+      <div class="phead">
+        <div><h2 id="phaseTitle">March · Beginning of isolation</h2><div class="sub" id="phaseSub">Onset phase</div></div>
+        <span class="pill warn" id="phasePill">ELEVATED</span>
+      </div>
+      <p id="phaseDesc" style="font-size:.85rem;color:var(--text-dim);margin-bottom:14px"></p>
+      <div class="gauge" id="phaseGauges"></div>
+      <div class="list" style="margin-top:16px" id="phaseActions"></div>
+    </div>
+  </div>
+
+  <div class="grid g3">
+    <div class="panel">
+      <div class="phead"><div><h2>Anonymous daily check-in</h2><div class="sub">Stored locally · never attributed</div></div></div>
+      <div class="label" style="margin-bottom:7px">How is today?</div>
+      <div class="mood" id="moodRow">
+        <button data-v="5">Steady</button><button data-v="4">Flat</button>
+        <button data-v="3">Strained</button><button data-v="2">Low</button><button data-v="1">Struggling</button>
+      </div>
+      <div class="field" style="margin-top:12px"><label>Sleep last night (h)</label><input type="number" id="sleepH" min="0" max="14" step="0.5" value="5.5" /></div>
+      <button class="btn primary sm" id="submitCheckin">Submit anonymously</button>
+      <p class="sub" style="margin-top:9px" id="checkinNote">No submission today.</p>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><div><h2>Polar-night sleep hygiene</h2><div class="sub">Circadian anchoring without daylight</div></div></div>
+      <div class="list">
+        <div class="row"><span class="pill info">LIGHT</span><div class="txt"><b>Timed light box, Use site-approved schedule</b><span>Anchor wake time before galley shift; avoid after 14:00.</span></div></div>
+        <div class="row"><span class="pill info">TEMP</span><div class="txt"><b>Berth at Site-approved range</b><span>Overheated cabins are a leading cause of midwinter fragmentation.</span></div></div>
+        <div class="row"><span class="pill info">SCREENS</span><div class="txt"><b>Amber filter after site-defined time</b><span>Comms shifts should use red-mode consoles where possible.</span></div></div>
+        <div class="row"><span class="pill info">STIM</span><div class="txt"><b>Caffeine cut-off site-defined time</b><span>Track alongside reported smoking increase in the onset phase.</span></div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><div><h2>Secure peer forum</h2><div class="sub">Pseudonymous · station-only</div></div><span class="pill ok">E2E</span></div>
+      <div id="threads"></div>
+      <div class="field"><label>Post to the group</label><textarea id="postBody" placeholder="Something you want the team to know, without your name on it..."></textarea></div>
+      <button class="btn primary sm" id="postBtn">Post pseudonymously</button>
+    </div>
+  </div>
+
+  <div class="panel simple-state">
+    <div class="phead"><div><h2>Upload data</h2><div class="sub" id="transferQueueSummary" data-dataset="data-transfer" data-dataset-path="data-transfer.queue">Choose a file to add to the transfer queue</div></div><span class="pill info">LOCAL QUEUE</span></div>
+    <label class="drop" for="dataUpload"><b>Select data file</b><br /><span class="sub">Files are queued in this browser.</span></label>
+    <input id="dataUpload" type="file" hidden />
+    <div class="row" id="uploadStatus"><span class="pill">WAITING</span><div class="txt"><b>No file queued</b><span>Choose a file to prepare it for transfer.</span></div></div>
+  </div>
+
+</section>
+
+<!-- ==========================================================================
+    MODULE 5 — ALERTS
+     ========================================================================== -->
+<section class="module" id="m5" role="tabpanel">
+  <div class="modhead">
+    <h1>Alerts</h1>
+  </div>
+
+  <div class="grid g2" style="margin-bottom:16px">
+    <div class="panel">
+      <div class="phead">
+        <div><h2>Research Site Access Status</h2><div class="sub">Meltwater, crevassing, and traverse feasibility</div></div>
+        <span class="pill warn" id="sitePill">2 sites restricted</span>
+      </div>
+      <table>
+        <thead><tr><th>Site</th><th>Access</th><th class="mono">Meltwater</th><th class="mono">Delay</th><th>Route</th></tr></thead>
+        <tbody id="siteRows" data-dataset="alerts" data-dataset-collection="sites"></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="phead">
+        <div><h2>Historic Preservation Integrity Logs</h2><div class="sub">Timber huts &amp; legacy installations</div></div>
+        <span class="pill bad" id="heritagePill">1 structural alert</span>
+      </div>
+      <div class="grid" id="heritageCards" data-dataset="alerts" data-dataset-collection="heritage"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="phead">
+      <div><h2>Raise an integrity observation</h2><div class="sub">Feeds the preservation work order queue</div></div>
+    </div>
+    <div class="grid g3">
+      <div class="field"><label>Asset</label><select id="obsAsset"></select></div>
+      <div class="field"><label>Observation type</label>
+        <select id="obsType">
+          <option>Foundation settlement / thaw</option>
+          <option>Timber rot &amp; moisture ingress</option>
+          <option>Meltwater channel encroachment</option>
+          <option>Wind scour / cladding loss</option>
+          <option>Snow drift loading</option>
+        </select>
+      </div>
+      <div class="field"><label>Severity</label><select id="obsSev"><option>Monitor</option><option>Elevated</option><option>Structural alert</option></select></div>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="obsNotes" placeholder="Enter field observation"></textarea></div>
+    <button class="btn primary" id="obsSubmit">File observation</button>
+    <div class="list" style="margin-top:14px" id="obsLog"></div>
+  </div>
+
+  <div class="panel simple-state">
+    <div class="phead"><div><h2>Alert log</h2><div class="sub">Recent alerts recorded by this console</div></div><span class="pill info">LOCAL LOG</span></div>
+    <div class="list" id="alertLog"><div class="row"><span class="pill">CLEAR</span><div class="txt"><b>No alerts logged</b><span>Connected alert events will appear here.</span></div></div></div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap"><span>POLARIS OPS · Antarctic station console</span></div>
+</footer>
+
+<div id="toasts" aria-live="polite"></div>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
